@@ -1,0 +1,3 @@
+pub const FREQ: u32 = 16000000;
+pub const TICKS_PER_SECOND: u32 = 100;
+pub const TICK_INTERVAL: u32 = FREQ / TICKS_PER_SECOND;
