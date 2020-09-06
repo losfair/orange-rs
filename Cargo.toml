@@ -1,6 +1,6 @@
 [package]
 name = "orange"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["losfair <zhy20000919@hotmail.com>"]
 edition = "2018"
 license = "MIT"
