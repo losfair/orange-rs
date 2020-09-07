@@ -1,7 +1,12 @@
 use crate::comm;
 use crate::interrupt::without_interrupts;
 
-const SELECTOR_SPI: u8 = 0x3;
+pub struct SpiMaster {
+    selector: u8,
+}
+
+pub const SPI1: SpiMaster = SpiMaster { selector: 0x3 };
+pub const SPI2: SpiMaster = SpiMaster { selector: 0x4 };
 
 const SPICR0: u8 = 0x08;
 const SPICR1: u8 = 0x09;
@@ -14,42 +19,58 @@ const SPISR: u8 = 0x0C;
 const SPIINTSR: u8 = 0x06;
 const SPIINTCR: u8 = 0x07;
 
-unsafe fn spi_reg_read(index: u8) -> u32 {
-    comm::reg_read(SELECTOR_SPI, index)
+impl SpiMaster {
+    unsafe fn reg_read(&self, index: u8) -> u32 {
+        comm::reg_read(self.selector, index)
+    }
+
+    unsafe fn reg_write(&self, index: u8, value: u32) {
+        comm::reg_write(self.selector, index, value)
+    }
+
+    unsafe fn wait_trdy(&self) {
+        while self.reg_read(SPISR) & 0x10 == 0 {}
+    }
+    
+    unsafe fn wait_rrdy(&self) {
+        while self.reg_read(SPISR) & 0x08 == 0 {}
+    }
+
+    pub fn init(&self) {
+        without_interrupts(|| {
+            unsafe {
+                self.wait_trdy();
+                self.reg_write(SPICR1, 0x80);
+                self.wait_trdy();
+                self.reg_write(SPIBR, 0x02);
+                self.wait_trdy();
+                self.reg_write(SPICR2, 0xc0);
+            }
+        });
+    }
+
+    pub fn deinit(&self) {
+        unsafe {
+            while self.reg_read(SPISR) & 0x80 != 0 {}
+        }
+    }
+
+    pub fn write(&self, data: u8) -> u8 {
+        without_interrupts(|| {
+            unsafe {
+                self.wait_trdy();
+                self.reg_write(SPITXDR, data as u32);
+                self.wait_rrdy();
+                self.reg_read(SPIRXDR) as u8
+            }
+        })
+    }
 }
 
-unsafe fn spi_reg_write(index: u8, value: u32) {
-    comm::reg_write(SELECTOR_SPI, index, value)
+pub fn spi_init() {
+    SPI1.init();
 }
-
-unsafe fn spi_wait_trdy() {
-    while spi_reg_read(SPISR) & 0x10 == 0 {}
-}
-
-unsafe fn spi_wait_rrdy() {
-    while spi_reg_read(SPISR) & 0x08 == 0 {}
-}
-
-pub unsafe fn spi_init() {
-    spi_wait_trdy();
-    spi_reg_write(SPICR1, 0x80);
-    spi_wait_trdy();
-    spi_reg_write(SPIBR, 0x03);
-    spi_wait_trdy();
-    spi_reg_write(SPICR2, 0xc0);
-}
-/*
-pub unsafe fn spi_deinit() {
-    while spi_reg_read(SPISR) & 0x80 != 0 {}
-}*/
 
 pub fn spi_write(data: u8) -> u8 {
-    without_interrupts(|| {
-        unsafe {
-            spi_wait_trdy();
-            spi_reg_write(SPITXDR, data as u32);
-            spi_wait_rrdy();
-            spi_reg_read(SPIRXDR) as u8
-        }
-    })
+    SPI1.write(data)
 }

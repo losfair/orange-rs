@@ -13,3 +13,4 @@ pub mod flash;
 pub mod led;
 pub mod comm;
 pub mod harduart;
+pub mod xip;
