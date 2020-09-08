@@ -14,6 +14,7 @@ impl Flash {
         self.ss.write(true);
         self.ss.set_mode(PinMode::Output);
         self.reset();
+        self.set_qe();
     }
 
     pub fn ss(&self) -> IoPin {
@@ -49,6 +50,30 @@ impl Flash {
 
     pub fn disable(&self) {
         self.ss.write(true);
+    }
+
+    pub fn set_qe(&self) {
+        self.enable();
+        self.port.write(0x05); // read status register 1
+        let sr_1 = self.port.write(0x00);
+        self.disable();
+
+        self.enable();
+        self.port.write(0x35); // read status register 2
+        let mut sr_2 = self.port.write(0x00);
+        self.disable();
+
+        sr_2 |= (1 << 1); // QE bit
+
+        self.enable();
+        self.port.write(0x50); // Write Enable for Volatile Status Register
+        self.disable();
+
+        self.enable();
+        self.port.write(0x01); // Write Status Register
+        self.port.write(sr_1);
+        self.port.write(sr_2);
+        self.disable();
     }
 }
 
