@@ -3,7 +3,7 @@ use bit_field::BitField;
 
 const POWER_REG: u8 = 0x30;
 const BIT_RESET: usize = 0;
-const BIT_POWERSAVE: usize = 1;
+const BIT_DEEP_SLEEP: usize = 1;
 const BIT_WATCHDOG: usize = 2;
 const BIT_SPI_FOR_XIP: usize = 3;
 const BIT_SECURE_MODE_DISABLE: usize = 4;
@@ -17,18 +17,10 @@ pub fn reset() -> ! {
     unreachable!()
 }
 
-pub fn powersave_enter() {
+pub fn deep_sleep() {
     unsafe {
         let mut reg = mmio::read(POWER_REG);
-        reg.set_bit(BIT_POWERSAVE, true);
-        mmio::write(POWER_REG, reg);
-    }
-}
-
-pub fn powersave_leave() {
-    unsafe {
-        let mut reg = mmio::read(POWER_REG);
-        reg.set_bit(BIT_POWERSAVE, false);
+        reg.set_bit(BIT_DEEP_SLEEP, true);
         mmio::write(POWER_REG, reg);
     }
 }
