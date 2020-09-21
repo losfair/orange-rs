@@ -1,19 +1,14 @@
 use crate::mmio;
-use crate::interrupt::without_interrupts;
 
 const COMM_WRITE: u8 = 0x11;
 const COMM_READ: u8 = 0x12;
 
 pub unsafe fn reg_read(selector: u8, index: u8) -> u32 {
-    without_interrupts(|| {
-        let aux = index as u16 | ((selector as u16) << 8);
-        mmio::read_aux(COMM_READ, aux)
-    })
+    let aux = index as u16 | ((selector as u16) << 8);
+    mmio::read_aux(COMM_READ, aux)
 }
 
 pub unsafe fn reg_write(selector: u8, index: u8, value: u32) {
-    without_interrupts(|| {
-        let aux = index as u16 | ((selector as u16) << 8);
-        mmio::write_aux(COMM_WRITE, aux, value)
-    })
+    let aux = index as u16 | ((selector as u16) << 8);
+    mmio::write_aux(COMM_WRITE, aux, value)
 }

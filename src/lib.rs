@@ -15,3 +15,4 @@ pub mod comm;
 pub mod harduart;
 pub mod xip;
 pub mod crypto;
+pub mod drv;

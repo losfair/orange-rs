@@ -1,5 +1,4 @@
 use crate::comm;
-use crate::interrupt::without_interrupts;
 
 pub struct SpiMaster {
     selector: u8,
@@ -37,16 +36,14 @@ impl SpiMaster {
     }
 
     pub fn init(&self) {
-        without_interrupts(|| {
-            unsafe {
-                self.wait_trdy();
-                self.reg_write(SPICR1, 0x80);
-                self.wait_trdy();
-                self.reg_write(SPIBR, 0x02);
-                self.wait_trdy();
-                self.reg_write(SPICR2, 0xc0);
-            }
-        });
+        unsafe {
+            self.wait_trdy();
+            self.reg_write(SPICR1, 0x80);
+            self.wait_trdy();
+            self.reg_write(SPIBR, 0x02);
+            self.wait_trdy();
+            self.reg_write(SPICR2, 0xc0);
+        }
     }
 
     pub fn deinit(&self) {
@@ -56,14 +53,12 @@ impl SpiMaster {
     }
 
     pub fn write(&self, data: u8) -> u8 {
-        without_interrupts(|| {
-            unsafe {
-                self.wait_trdy();
-                self.reg_write(SPITXDR, data as u32);
-                self.wait_rrdy();
-                self.reg_read(SPIRXDR) as u8
-            }
-        })
+        unsafe {
+            self.wait_trdy();
+            self.reg_write(SPITXDR, data as u32);
+            self.wait_rrdy();
+            self.reg_read(SPIRXDR) as u8
+        }
     }
 }
 
