@@ -13,6 +13,10 @@ pub fn cycle() -> u64 {
     a | (b << 32)
 }
 
+pub fn microseconds() -> u64 {
+    cycle() / ((crate::config::FREQ / 1000000) as u64)
+}
+
 pub unsafe fn set_timer(deadline: u64) {
     let a = deadline as u32;
     let b = (deadline >> 32) as u32;
