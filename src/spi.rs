@@ -56,7 +56,7 @@ impl SpiMaster {
 
     pub fn deinit(&self) {
         unsafe {
-            while self.reg_read(SPISR) & 0x80 != 0 {}
+            self.reg_write(SPICR1, 0x00);
         }
     }
 
