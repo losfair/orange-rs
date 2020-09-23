@@ -70,6 +70,8 @@ impl IoPin {
     }
 
     pub fn enable_interrupt(&self, mode: IntrMode) {
+        self.ack_interrupt(); // Flush previous interrupts on this pin.
+
         let mut bank = unsafe {
             mmio::read(BANK_0_INTR_MODE)
         };

@@ -2,10 +2,11 @@ use crate::comm;
 
 pub struct SpiMaster {
     selector: u8,
+    offset: u8,
 }
 
-pub const SPI1: SpiMaster = SpiMaster { selector: 0x3 };
-pub const SPI2: SpiMaster = SpiMaster { selector: 0x4 };
+pub const SPI1: SpiMaster = SpiMaster { selector: 0x3, offset: 0b00000000 };
+pub const SPI2: SpiMaster = SpiMaster { selector: 0x4, offset: 0b00100000 };
 
 const SPICR0: u8 = 0x08;
 const SPICR1: u8 = 0x09;
@@ -20,11 +21,11 @@ const SPIINTCR: u8 = 0x07;
 
 impl SpiMaster {
     unsafe fn reg_read(&self, index: u8) -> u32 {
-        comm::reg_read(self.selector, index)
+        comm::reg_read(self.selector, index + self.offset)
     }
 
     unsafe fn reg_write(&self, index: u8, value: u32) {
-        comm::reg_write(self.selector, index, value)
+        comm::reg_write(self.selector, index + self.offset, value)
     }
 
     unsafe fn wait_trdy(&self) {
@@ -43,6 +44,13 @@ impl SpiMaster {
             self.reg_write(SPIBR, 0x02);
             self.wait_trdy();
             self.reg_write(SPICR2, 0xc0);
+        }
+    }
+
+    pub fn set_clock_divisor(&self, x: u8) {
+        unsafe {
+            self.wait_trdy();
+            self.reg_write(SPIBR, x as _);
         }
     }
 
