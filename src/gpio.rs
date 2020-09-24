@@ -27,9 +27,7 @@ pub struct IoPin(pub u32);
 impl IoPin {
     pub fn get_mode(&self) -> PinMode {
         assert!(self.0 < 32);
-        let is_input = unsafe {
-            mmio::read(BANK_0_MODE)
-        }.get_bit(self.0 as _);
+        let is_input = unsafe { mmio::read(BANK_0_MODE) }.get_bit(self.0 as _);
         if is_input {
             PinMode::Input
         } else {
@@ -39,13 +37,14 @@ impl IoPin {
 
     pub fn set_mode(&self, mode: PinMode) {
         assert!(self.0 < 32);
-        let mut bank = unsafe {
-            mmio::read(BANK_0_MODE)
-        };
-        bank.set_bit(self.0 as _, match mode {
-            PinMode::Input => true,
-            PinMode::Output => false,
-        });
+        let mut bank = unsafe { mmio::read(BANK_0_MODE) };
+        bank.set_bit(
+            self.0 as _,
+            match mode {
+                PinMode::Input => true,
+                PinMode::Output => false,
+            },
+        );
         unsafe {
             mmio::write(BANK_0_MODE, bank);
         }
@@ -53,16 +52,12 @@ impl IoPin {
 
     pub fn read(&self) -> bool {
         assert!(self.0 < 32);
-        unsafe {
-            mmio::read(BANK_0_DATA)
-        }.get_bit(self.0 as _)
+        unsafe { mmio::read(BANK_0_DATA) }.get_bit(self.0 as _)
     }
 
     pub fn write(&self, value: bool) {
         assert!(self.0 < 32);
-        let mut bank = unsafe {
-            mmio::read(BANK_0_DATA)
-        };
+        let mut bank = unsafe { mmio::read(BANK_0_DATA) };
         bank.set_bit(self.0 as _, value);
         unsafe {
             mmio::write(BANK_0_DATA, bank);
@@ -72,9 +67,7 @@ impl IoPin {
     pub fn enable_interrupt(&self, mode: IntrMode) {
         self.ack_interrupt(); // Flush previous interrupts on this pin.
 
-        let mut bank = unsafe {
-            mmio::read(BANK_0_INTR_MODE)
-        };
+        let mut bank = unsafe { mmio::read(BANK_0_INTR_MODE) };
         let mode_bit = match mode {
             IntrMode::RisingEdge => false,
             IntrMode::FallingEdge => true,
@@ -84,9 +77,7 @@ impl IoPin {
             mmio::write(BANK_0_INTR_MODE, bank);
         }
 
-        let mut bank = unsafe {
-            mmio::read(BANK_0_INTR_EN)
-        };
+        let mut bank = unsafe { mmio::read(BANK_0_INTR_EN) };
         bank.set_bit(self.0 as _, true);
         unsafe {
             mmio::write(BANK_0_INTR_EN, bank);
@@ -94,9 +85,7 @@ impl IoPin {
     }
 
     pub fn disable_interrupt(&self) {
-        let mut bank = unsafe {
-            mmio::read(BANK_0_INTR_EN)
-        };
+        let mut bank = unsafe { mmio::read(BANK_0_INTR_EN) };
         bank.set_bit(self.0 as _, false);
         unsafe {
             mmio::write(BANK_0_INTR_EN, bank);
@@ -111,9 +100,7 @@ impl IoPin {
 }
 
 pub fn first_interrupt_pin() -> Option<IoPin> {
-    let bank = unsafe {
-        mmio::read(BANK_0_INTR_TRIG)
-    };
+    let bank = unsafe { mmio::read(BANK_0_INTR_TRIG) };
     for i in 0..32u32 {
         if bank.get_bit(i as usize) {
             return Some(IoPin(i));

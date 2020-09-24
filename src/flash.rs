@@ -1,13 +1,16 @@
 use crate::gpio::{IoPin, PinMode};
-use crate::timer::delay_microseconds;
 use crate::spi::SpiMaster;
+use crate::timer::delay_microseconds;
 
 pub struct Flash {
     port: &'static SpiMaster,
     ss: IoPin,
 }
 
-pub const PROGRAM_FLASH: Flash = Flash { port: &crate::spi::SPI1, ss: IoPin(16) };
+pub const PROGRAM_FLASH: Flash = Flash {
+    port: &crate::spi::SPI1,
+    ss: IoPin(16),
+};
 
 impl Flash {
     pub fn init(&self) {

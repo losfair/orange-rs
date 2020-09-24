@@ -1,8 +1,8 @@
 //! Bit-banging UART for receiving boot code.
 
 use crate::gpio::{IoPin, PinMode};
-use crate::timer;
 use crate::interrupt::without_interrupts;
+use crate::timer;
 
 #[repr(C)]
 pub struct Port {
@@ -42,7 +42,7 @@ impl Port {
             for i in 1..12usize {
                 tx_plan[i].1 = tx_plan[i - 1].1 + self.cycles_per_bit as u64;
             }
-    
+
             self.execute_tx_plan(&tx_plan);
         });
     }

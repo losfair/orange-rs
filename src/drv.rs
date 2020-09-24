@@ -1,5 +1,5 @@
-use bit_field::BitField;
 use crate::comm;
+use bit_field::BitField;
 
 static mut CURRENT_DRV: u8 = 0;
 

@@ -5,8 +5,14 @@ pub struct SpiMaster {
     offset: u8,
 }
 
-pub const SPI1: SpiMaster = SpiMaster { selector: 0x3, offset: 0b00000000 };
-pub const SPI2: SpiMaster = SpiMaster { selector: 0x4, offset: 0b00100000 };
+pub const SPI1: SpiMaster = SpiMaster {
+    selector: 0x3,
+    offset: 0b00000000,
+};
+pub const SPI2: SpiMaster = SpiMaster {
+    selector: 0x4,
+    offset: 0b00100000,
+};
 
 const SPICR0: u8 = 0x08;
 const SPICR1: u8 = 0x09;
@@ -31,7 +37,7 @@ impl SpiMaster {
     unsafe fn wait_trdy(&self) {
         while self.reg_read(SPISR) & 0x10 == 0 {}
     }
-    
+
     unsafe fn wait_rrdy(&self) {
         while self.reg_read(SPISR) & 0x08 == 0 {}
     }

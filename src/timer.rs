@@ -4,12 +4,8 @@ const MTIMECMP_0: u8 = 0x22;
 const MTIMECMP_1: u8 = 0x23;
 
 pub fn cycle() -> u64 {
-    let a = unsafe {
-        crate::mmio::read(MTIME_0)
-    } as u64;
-    let b = unsafe {
-        crate::mmio::read(MTIME_1)
-    } as u64;
+    let a = unsafe { crate::mmio::read(MTIME_0) } as u64;
+    let b = unsafe { crate::mmio::read(MTIME_1) } as u64;
     a | (b << 32)
 }
 
