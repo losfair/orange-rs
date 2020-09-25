@@ -9,7 +9,7 @@ pub struct Flash {
 
 pub const PROGRAM_FLASH: Flash = Flash {
     port: &crate::spi::SPI1,
-    ss: IoPin(16),
+    ss: IoPin(31),
 };
 
 impl Flash {
