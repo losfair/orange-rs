@@ -7,6 +7,7 @@ const BANK_0_INTR_EN: u8 = 0x02;
 const BANK_0_INTR_MODE: u8 = 0x03;
 const BANK_0_INTR_TRIG: u8 = 0x04;
 const BANK_0_INTR_ACK: u8 = 0x05;
+const BANK_0_INTR_LEVEL: u8 = 0x06;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PinMode {
@@ -18,6 +19,8 @@ pub enum PinMode {
 pub enum IntrMode {
     RisingEdge,
     FallingEdge,
+    HighLevel,
+    LowLevel,
 }
 
 #[repr(transparent)]
@@ -65,23 +68,43 @@ impl IoPin {
     }
 
     pub fn enable_interrupt(&self, mode: IntrMode) {
-        self.ack_interrupt(); // Flush previous interrupts on this pin.
-
         let mut bank = unsafe { mmio::read(BANK_0_INTR_MODE) };
         let mode_bit = match mode {
-            IntrMode::RisingEdge => false,
-            IntrMode::FallingEdge => true,
+            IntrMode::RisingEdge | IntrMode::HighLevel => false,
+            IntrMode::FallingEdge | IntrMode::LowLevel => true,
         };
         bank.set_bit(self.0 as _, mode_bit);
         unsafe {
             mmio::write(BANK_0_INTR_MODE, bank);
         }
 
-        let mut bank = unsafe { mmio::read(BANK_0_INTR_EN) };
-        bank.set_bit(self.0 as _, true);
+        let mut bank = unsafe { mmio::read(BANK_0_INTR_LEVEL) };
+        let level_bit = match mode {
+            IntrMode::RisingEdge | IntrMode::FallingEdge => false,
+            IntrMode::HighLevel | IntrMode::LowLevel => true,
+        };
+        bank.set_bit(self.0 as _, level_bit);
         unsafe {
-            mmio::write(BANK_0_INTR_EN, bank);
+            mmio::write(BANK_0_INTR_LEVEL, bank);
         }
+
+        // Now we have finished setup. Enable interrupts on this pin.
+        crate::interrupt::without_interrupts(|| {
+            let mut bank = unsafe { mmio::read(BANK_0_INTR_EN) };
+            bank.set_bit(self.0 as _, true);
+            unsafe {
+                mmio::write(BANK_0_INTR_EN, bank);
+            }
+
+            // Wait for interrupt controller to respond.
+            for _ in 0..16 {
+                unsafe {
+                    llvm_asm!("" :::: "volatile");
+                }
+            }
+    
+            self.ack_interrupt(); // Flush previous interrupts on this pin.
+        });
     }
 
     pub fn disable_interrupt(&self) {
