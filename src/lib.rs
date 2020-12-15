@@ -17,3 +17,6 @@ pub mod spi;
 pub mod timer;
 pub mod xip;
 pub mod smc;
+
+#[cfg(feature = "entry")]
+pub mod entry;

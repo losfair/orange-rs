@@ -3,8 +3,8 @@ use crate::spi::SpiMaster;
 use crate::timer::delay_microseconds;
 
 pub struct Flash {
-    port: &'static SpiMaster,
-    ss: IoPin,
+    pub port: &'static SpiMaster,
+    pub ss: IoPin,
 }
 
 pub const PROGRAM_FLASH: Flash = Flash {

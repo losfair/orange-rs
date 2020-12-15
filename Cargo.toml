@@ -12,3 +12,6 @@ repository = "https://github.com/losfair/orange-rs"
 [dependencies]
 bit_field = "0.10"
 bitflags = "1.2"
+
+[features]
+entry = []
