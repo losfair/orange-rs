@@ -16,3 +16,4 @@ pub mod softuart;
 pub mod spi;
 pub mod timer;
 pub mod xip;
+pub mod smc;
