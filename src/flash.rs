@@ -35,14 +35,16 @@ impl Flash {
         delay_microseconds(100);
     }
 
-    pub fn read(&self, addr: u32, out: &mut [u8]) {
+    pub fn read<F: FnMut(usize, u8) -> bool>(&self, addr: u32, mut f: F) {
         self.enable();
         self.port.write(0x03);
         self.port.write((addr >> 16) as u8);
         self.port.write((addr >> 8) as u8);
         self.port.write(addr as u8);
-        for b in out {
-            *b = self.port.write(0);
+        for i in 0.. {
+            if !f(i, self.port.write(0)) {
+                break;
+            }
         }
         self.disable();
     }
@@ -82,8 +84,4 @@ impl Flash {
 
 pub fn init() {
     PROGRAM_FLASH.init()
-}
-
-pub fn read(addr: u32, out: &mut [u8]) {
-    PROGRAM_FLASH.read(addr, out)
 }
